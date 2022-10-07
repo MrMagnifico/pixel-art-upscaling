@@ -1,0 +1,7 @@
+# Directories
+/build
+/data
+/outputs
+
+# IDE files
+/.vscode
