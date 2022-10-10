@@ -16,34 +16,17 @@ DISABLE_WARNINGS_POP()
 #define WDIFF(c1, c2) yuvDifference(c1, c2)
 
 
-constexpr uint8_t y_threshold = 0x30;
-constexpr uint8_t u_threshold = 0x07;
-constexpr uint8_t v_threshold = 0x06;
+constexpr uint8_t Y_THRESHOLD = 0x30;
+constexpr uint8_t U_THRESHOLD = 0x07;
+constexpr uint8_t V_THRESHOLD = 0x06;
 
-static inline glm::uvec3 rgbToYuv(glm::uvec3 val) {
-    return {
-        (0.299f * val.r) + (0.587f * val.g) + (0.114f * val.b),
-        ((-0.169f * val.r) + (-0.331 * val.g) + (0.5f * val.b)) + 128,
-        ((0.5f * val.r) + (-0.419f * val.g) + (-0.081f * val.b)) + 128};
-}
-
-static inline uint32_t rgbToYuv(uint32_t val) {
-    uint32_t r = (val & 0xFF0000) >> 16;
-    uint32_t g = (val & 0x00FF00) >> 8;
-    uint32_t b = (val) & 0x0000FF;
-
-    uint32_t y = (0.299f * r) + (0.587f * g) + (0.114f * b);
-    uint32_t u = ((-0.169f * r) + (-0.331 * g) + (0.5f * b)) + 128;
-    uint32_t v = ((0.5f * r) + (-0.419f * g) + (-0.081f * b)) + 128;
-    return (y << 16) + (u << 8) + v;
-}
 
 static inline bool yuvDifference(glm::uvec3 lhs, glm::uvec3 rhs) {
     glm::ivec3 lhs_yuv = rgbToYuv(lhs);
     glm::ivec3 rhs_yuv = rgbToYuv(rhs);
-    return (abs(lhs_yuv.x - rhs_yuv.x) > y_threshold ||
-            abs(lhs_yuv.y - rhs_yuv.y) > u_threshold ||
-            abs(lhs_yuv.z - rhs_yuv.z) > v_threshold);
+    return (abs(lhs_yuv.x - rhs_yuv.x) > Y_THRESHOLD ||
+            abs(lhs_yuv.y - rhs_yuv.y) > U_THRESHOLD ||
+            abs(lhs_yuv.z - rhs_yuv.z) > V_THRESHOLD);
 }
 
 template<typename T>

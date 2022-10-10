@@ -69,4 +69,22 @@ inline T bilinearInterpolation(T top_left, T top_right, T bottom_left, T bottom_
     return glm::mix(top_interp, bottom_interp, bottom_proportion);
 }
 
+static inline glm::uvec3 rgbToYuv(glm::uvec3 val) {
+    return {
+        (0.299f * val.r) + (0.587f * val.g) + (0.114f * val.b),
+        ((-0.169f * val.r) + (-0.331 * val.g) + (0.5f * val.b)) + 128,
+        ((0.5f * val.r) + (-0.419f * val.g) + (-0.081f * val.b)) + 128};
+}
+
+static inline uint32_t rgbToYuv(uint32_t val) {
+    uint32_t r = (val & 0xFF0000) >> 16;
+    uint32_t g = (val & 0x00FF00) >> 8;
+    uint32_t b = (val) & 0x0000FF;
+
+    uint32_t y = (0.299f * r) + (0.587f * g) + (0.114f * b);
+    uint32_t u = ((-0.169f * r) + (-0.331 * g) + (0.5f * b)) + 128;
+    uint32_t v = ((0.5f * r) + (-0.419f * g) + (-0.081f * b)) + 128;
+    return (y << 16) + (u << 8) + v;
+}
+
 #endif

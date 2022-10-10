@@ -14,6 +14,7 @@ DISABLE_WARNINGS_POP()
 #include "eagle.hpp"
 #include "epx.hpp"
 #include "hq2x.hpp"
+#include "xbr.hpp"
 
 static const std::filesystem::path data_dir_path { DATA_DIR };
 static const std::filesystem::path out_dir_path { OUTPUT_DIR };
@@ -27,12 +28,14 @@ int main(int argc, char** argv) {
     Image<glm::uvec3> scale_eagle = scaleEagle(input);
     Image<glm::uvec3> scale_2xsai = scale2xSaI(input);
     Image<glm::uvec3> scale_hq2x = scaleHq2x(input);
+    Image<glm::uvec3> scale_xbr = scaleXbr(input);
 
     scale_epx.writeToFile(out_dir_path / "scale_epx.png");
     scale_adv_mame.writeToFile(out_dir_path / "scale_adv_mame.png");
     scale_eagle.writeToFile(out_dir_path / "scale_eagle.png");
     scale_2xsai.writeToFile(out_dir_path / "scale_2xSaI.png");
     scale_hq2x.writeToFile(out_dir_path / "scale_hq2x.png");
+    scale_xbr.writeToFile(out_dir_path / "scale_xbr.png");
 
     return EXIT_SUCCESS;
 }
