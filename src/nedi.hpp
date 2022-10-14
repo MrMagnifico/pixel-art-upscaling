@@ -17,8 +17,6 @@ DISABLE_WARNINGS_POP()
 #include "common.hpp"
 
 
-typedef std::pair<size_t, size_t> ImageCoords;
-
 constexpr size_t WINDOW_PXL_LENGTH = 4U; // Must be even
 constexpr glm::vec3 DETERMINANT_EPSILON(1e-6f);
 
@@ -85,8 +83,6 @@ Image<T> scaleNedi(const Image<T>& src) {
             // Define top left corner of the sampling box
             int top_left_x = x - ((WINDOW_PXL_LENGTH / 2) - 1);
             int top_left_y = y - ((WINDOW_PXL_LENGTH / 2) - 1);
-            ImageCoords top_left_pixel_xy(top_left_x >= 0 ? top_left_x : 0,
-                                          top_left_y >= 0 ? top_left_y : 0);
 
             // Construct column vector representing window and matrices representing diagonal and axial neighbours of each pixel in the window
             Eigen::Matrix<T, WINDOW_PXL_LENGTH * WINDOW_PXL_LENGTH, 1> col_vec_y;
@@ -95,10 +91,10 @@ Image<T> scaleNedi(const Image<T>& src) {
             size_t window_pixel_counter = 0U;
             for (int offset_y = 0; offset_y < WINDOW_PXL_LENGTH; offset_y++) {
                 for (int offset_x = 0; offset_x < WINDOW_PXL_LENGTH; offset_x++) {
-                    int window_pixel_x = top_left_pixel_xy.first + offset_x;
-                    int window_pixel_y = top_left_pixel_xy.second + offset_y;
+                    int window_pixel_x = top_left_x + offset_x;
+                    int window_pixel_y = top_left_y + offset_y;
 
-                    col_vec_y(window_pixel_counter) = src.safeAccess(window_pixel_x, window_pixel_y, NEAREST);
+                    col_vec_y(window_pixel_counter) = src.safeAccess(window_pixel_x, window_pixel_y, ZERO);
                     std::array<T, 4> diagonal_neighbour_row = {
                         src.safeAccess(window_pixel_x - 1, window_pixel_y - 1, ZERO),
                         src.safeAccess(window_pixel_x + 1, window_pixel_y - 1, ZERO),

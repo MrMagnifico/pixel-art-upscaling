@@ -21,8 +21,8 @@ static const std::filesystem::path data_dir_path { DATA_DIR };
 static const std::filesystem::path out_dir_path { OUTPUT_DIR };
 
 int main(int argc, char** argv) {
-    Image<glm::uvec3> input = Image<glm::uvec3>(data_dir_path / "smw_bowser_input.png");
-    Image<glm::vec3> input_flt = Image<glm::vec3>(data_dir_path / "smw_bowser_input.png");
+    Image<glm::uvec3> input = Image<glm::uvec3>(data_dir_path / "Z-Saber_Zero_MX3.png");
+    Image<glm::vec3> input_flt = Image<glm::vec3>(data_dir_path / "Z-Saber_Zero_MX3.png");
     input.writeToFile(out_dir_path / "initial_image.png");
 
     Image<glm::uvec3> scale_epx = scaleEpx(input);
