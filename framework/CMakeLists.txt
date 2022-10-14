@@ -15,7 +15,7 @@ add_library(CGFramework STATIC
 )
 target_include_directories(CGFramework PRIVATE "include/framework/" PUBLIC "include/")
 
-target_link_libraries(CGFramework PUBLIC fmt stb glm)
+target_link_libraries(CGFramework PUBLIC fmt stb glm eigen)
 # target_link_libraries(CGFramework PUBLIC fmt stb glm Threads::Threads TBB::tbb) # + TBB
 
 target_compile_features(CGFramework PUBLIC cxx_std_20)

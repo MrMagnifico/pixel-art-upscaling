@@ -2,6 +2,7 @@ add_subdirectory("catch2")
 add_subdirectory("glm")
 add_subdirectory("fmt")
 add_subdirectory("stb")
+add_subdirectory("eigen-3.4.0")
 #add_subdirectory("oneTBB")
 
 #add_subdirectory("tinyobjloader")
