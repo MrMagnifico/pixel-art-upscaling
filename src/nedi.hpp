@@ -8,6 +8,7 @@
 DISABLE_WARNINGS_PUSH()
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <Eigen/LU>
 #include <glm/vec3.hpp>
 #include <glm/geometric.hpp>
 DISABLE_WARNINGS_POP()
@@ -19,6 +20,7 @@ DISABLE_WARNINGS_POP()
 typedef std::pair<size_t, size_t> ImageCoords;
 
 constexpr size_t WINDOW_PXL_LENGTH = 4U; // Must be even
+constexpr glm::vec3 DETERMINANT_EPSILON(1e-6f);
 
 
 namespace Eigen {
@@ -62,6 +64,12 @@ namespace Eigen {
 
 
 template<typename T>
+void setAllRowsToValue(Eigen::Matrix<T, 4, 1>& col_vec, T value) {
+    for (uint8_t i = 0; i < 4; i++) { col_vec[i] = value; }
+}
+
+
+template<typename T>
 Image<T> scaleNedi(const Image<T>& src) {
     auto result = Image<T>(src.width * 2, src.height * 2);
 
@@ -92,29 +100,35 @@ Image<T> scaleNedi(const Image<T>& src) {
 
                     col_vec_y(window_pixel_counter) = src.safeAccess(window_pixel_x, window_pixel_y, NEAREST);
                     std::array<T, 4> diagonal_neighbour_row = {
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y - 1, NEAREST),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y - 1, NEAREST),
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y + 1, NEAREST),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y + 1, NEAREST)};
+                        src.safeAccess(window_pixel_x - 1, window_pixel_y - 1, ZERO),
+                        src.safeAccess(window_pixel_x + 1, window_pixel_y - 1, ZERO),
+                        src.safeAccess(window_pixel_x - 1, window_pixel_y + 1, ZERO),
+                        src.safeAccess(window_pixel_x + 1, window_pixel_y + 1, ZERO)};
                     for (uint8_t col = 0; col < 4; col++) { diagonal_neighbours(window_pixel_counter, col) = diagonal_neighbour_row[col]; }
                     std::array<T, 4> axial_neighbour_row = {
-                        src.safeAccess(window_pixel_x, window_pixel_y - 1, NEAREST),
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y, NEAREST),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y, NEAREST),
-                        src.safeAccess(window_pixel_x, window_pixel_y + 1, NEAREST)};
+                        src.safeAccess(window_pixel_x, window_pixel_y - 1, ZERO),
+                        src.safeAccess(window_pixel_x - 1, window_pixel_y, ZERO),
+                        src.safeAccess(window_pixel_x + 1, window_pixel_y, ZERO),
+                        src.safeAccess(window_pixel_x, window_pixel_y + 1, ZERO)};
                     for (uint8_t col = 0; col < 4; col++) { axial_neighbours(window_pixel_counter, col) = axial_neighbour_row[col]; }
 
                     window_pixel_counter++;
                 }
             }
 
-            // Compute diagonal and axial interpolation weights
+            // Compute diagonal and axial interpolation weights left sub-term
             auto diagonal_neighbours_transpose  = diagonal_neighbours.transpose();
             auto axial_neighbours_transpose     = axial_neighbours.transpose();
             auto diagonal_lhs                   = (diagonal_neighbours_transpose * diagonal_neighbours).inverse();
             auto axial_lhs                      = (axial_neighbours_transpose * axial_neighbours).inverse();
             Eigen::Matrix<T, 4, 1> diagonal_interp_weights  = diagonal_lhs * (diagonal_neighbours_transpose * col_vec_y);
-            Eigen::Matrix<T, 4, 1> axial_interp_weights     = axial_lhs    * (axial_neighbours_transpose * col_vec_y); 
+            Eigen::Matrix<T, 4, 1> axial_interp_weights     = axial_lhs    * (axial_neighbours_transpose * col_vec_y);
+
+            // If either of the weight vectors has NaNs, replace with equal weights
+            for (uint8_t i = 0; i < 4; i++) {
+                if (glm::any(glm::isnan(diagonal_interp_weights(i)))) { setAllRowsToValue(diagonal_interp_weights, glm::vec3(0.25f)); }
+                if (glm::any(glm::isnan(axial_interp_weights(i)))) { setAllRowsToValue(axial_interp_weights, glm::vec3(0.25f)); }
+            }
             
             int dst_x;
             int dst_y;
