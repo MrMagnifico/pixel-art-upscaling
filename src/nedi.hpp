@@ -17,8 +17,8 @@ DISABLE_WARNINGS_POP()
 #include "common.hpp"
 
 
-constexpr size_t WINDOW_PXL_LENGTH = 4U; // Must be even
-constexpr glm::vec3 DETERMINANT_EPSILON(1e-6f);
+constexpr glm::vec3 CONDITION_THRESHOLD(2.0f);
+constexpr uint32_t WINDOW_SIZE_MAX = 8U;
 
 
 namespace Eigen {
@@ -66,6 +66,19 @@ void setAllRowsToValue(Eigen::Matrix<T, 4, 1>& col_vec, T value) {
     for (uint8_t i = 0; i < 4; i++) { col_vec[i] = value; }
 }
 
+template<typename T>
+bool conditionBelowThreshold(uint32_t window_size, const Eigen::Matrix<T, Eigen::Dynamic, 4>& diagonal_neighbours,
+                             const Eigen::Matrix<T, Eigen::Dynamic, 4>& axial_neighbours) {
+    float scalar_component = 1.0f / (float(window_size) * float(window_size));
+    Eigen::Matrix<T, 4, 4> R_diagonal   = (diagonal_neighbours.transpose() * diagonal_neighbours);
+    Eigen::Matrix<T, 4, 4> R_axial      = (axial_neighbours.transpose() * axial_neighbours);
+
+    T condition_diagonal    = (R_diagonal.norm() * R_diagonal.inverse().norm()) * scalar_component;
+    T condition_axial       = (R_axial.norm() * R_axial.inverse().norm()) * scalar_component;
+    return glm::all(glm::lessThan(condition_diagonal, CONDITION_THRESHOLD)) &&
+           glm::all(glm::lessThan(condition_axial, CONDITION_THRESHOLD)) &&
+           !glm::any(glm::isnan(condition_diagonal)) && !glm::any(glm::isnan(condition_axial));
+}
 
 template<typename T>
 Image<T> scaleNedi(const Image<T>& src) {
@@ -80,37 +93,48 @@ Image<T> scaleNedi(const Image<T>& src) {
 
     for (int y = 0; y < src.height; y++) {
         for (int x = 0; x < src.width; x++) {
+            uint32_t window_pxl_length = 0U;
+
             // Define top left corner of the sampling box
-            int top_left_x = x - ((WINDOW_PXL_LENGTH / 2) - 1);
-            int top_left_y = y - ((WINDOW_PXL_LENGTH / 2) - 1);
+            int top_left_x = x - ((window_pxl_length / 2) - 1);
+            int top_left_y = y - ((window_pxl_length / 2) - 1);
 
             // Construct column vector representing window and matrices representing diagonal and axial neighbours of each pixel in the window
-            Eigen::Matrix<T, WINDOW_PXL_LENGTH * WINDOW_PXL_LENGTH, 1> col_vec_y;
-            Eigen::Matrix<T, WINDOW_PXL_LENGTH * WINDOW_PXL_LENGTH, 4> diagonal_neighbours;
-            Eigen::Matrix<T, WINDOW_PXL_LENGTH * WINDOW_PXL_LENGTH, 4> axial_neighbours;
-            size_t window_pixel_counter = 0U;
-            for (int offset_y = 0; offset_y < WINDOW_PXL_LENGTH; offset_y++) {
-                for (int offset_x = 0; offset_x < WINDOW_PXL_LENGTH; offset_x++) {
-                    int window_pixel_x = top_left_x + offset_x;
-                    int window_pixel_y = top_left_y + offset_y;
+            Eigen::Matrix<T, Eigen::Dynamic, 1> col_vec_y;
+            Eigen::Matrix<T, Eigen::Dynamic, 4> diagonal_neighbours;
+            Eigen::Matrix<T, Eigen::Dynamic, 4> axial_neighbours;
+            do {
+                window_pxl_length   += 2U;
+                col_vec_y           = Eigen::Matrix<T, Eigen::Dynamic, 1>(window_pxl_length * window_pxl_length, 1);
+                diagonal_neighbours = Eigen::Matrix<T, Eigen::Dynamic, 4>(window_pxl_length * window_pxl_length, 4);
+                axial_neighbours    = Eigen::Matrix<T, Eigen::Dynamic, 4>(window_pxl_length * window_pxl_length, 4);
+                size_t window_pixel_counter = 0U;
 
-                    col_vec_y(window_pixel_counter) = src.safeAccess(window_pixel_x, window_pixel_y, ZERO);
-                    std::array<T, 4> diagonal_neighbour_row = {
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y - 1, ZERO),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y - 1, ZERO),
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y + 1, ZERO),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y + 1, ZERO)};
-                    for (uint8_t col = 0; col < 4; col++) { diagonal_neighbours(window_pixel_counter, col) = diagonal_neighbour_row[col]; }
-                    std::array<T, 4> axial_neighbour_row = {
-                        src.safeAccess(window_pixel_x, window_pixel_y - 1, ZERO),
-                        src.safeAccess(window_pixel_x - 1, window_pixel_y, ZERO),
-                        src.safeAccess(window_pixel_x + 1, window_pixel_y, ZERO),
-                        src.safeAccess(window_pixel_x, window_pixel_y + 1, ZERO)};
-                    for (uint8_t col = 0; col < 4; col++) { axial_neighbours(window_pixel_counter, col) = axial_neighbour_row[col]; }
+                for (int offset_y = 0; offset_y < window_pxl_length; offset_y++) {
+                    for (int offset_x = 0; offset_x < window_pxl_length; offset_x++) {
+                        int window_pixel_x = top_left_x + offset_x;
+                        int window_pixel_y = top_left_y + offset_y;
 
-                    window_pixel_counter++;
+                        col_vec_y(window_pixel_counter) = src.safeAccess(window_pixel_x, window_pixel_y, NEAREST);
+                        std::array<T, 4> diagonal_neighbour_row = {
+                            src.safeAccess(window_pixel_x - 1, window_pixel_y - 1, ZERO),
+                            src.safeAccess(window_pixel_x + 1, window_pixel_y - 1, ZERO),
+                            src.safeAccess(window_pixel_x - 1, window_pixel_y + 1, ZERO),
+                            src.safeAccess(window_pixel_x + 1, window_pixel_y + 1, ZERO)};
+                        for (uint8_t col = 0; col < 4; col++) { diagonal_neighbours(window_pixel_counter, col) = diagonal_neighbour_row[col]; }
+                        std::array<T, 4> axial_neighbour_row = {
+                            src.safeAccess(window_pixel_x, window_pixel_y - 1, ZERO),
+                            src.safeAccess(window_pixel_x - 1, window_pixel_y, ZERO),
+                            src.safeAccess(window_pixel_x + 1, window_pixel_y, ZERO),
+                            src.safeAccess(window_pixel_x, window_pixel_y + 1, ZERO)};
+                        for (uint8_t col = 0; col < 4; col++) { axial_neighbours(window_pixel_counter, col) = axial_neighbour_row[col]; }
+
+                        window_pixel_counter++;
+                    }
                 }
-            }
+            } while (!conditionBelowThreshold(window_pxl_length, diagonal_neighbours, axial_neighbours) && window_pxl_length < WINDOW_SIZE_MAX);
+            
+            
 
             // Compute diagonal and axial interpolation weights left sub-term
             auto diagonal_neighbours_transpose  = diagonal_neighbours.transpose();
