@@ -3,6 +3,16 @@
 
 #include <stdint.h>
 
+/**
+ * Compute if three or more of the given values are equal/identical
+ * 
+ * @param a First value
+ * @param b Second value
+ * @param c Third value
+ * @param d Fourth value
+ * 
+ * @return True if three or more are equal, false otherwise
+*/
 template<typename T>
 bool threeOrMoreIdentical(T a, T b, T c, T d) {
     return ((a == b && b == c) ||
@@ -31,6 +41,18 @@ bool threeOrMoreIdentical(T a, T b, T c, T d) {
             (d == c && c == b));
 }
 
+/**
+ * Interpolate a point in the rectangle defined by the given values
+ * 
+ * @param top_left Value of the top left corner
+ * @param top_right Value of the top right corner
+ * @param bottom_left Value of the bottom left corner
+ * @param bottom_right Value of the bottom right corner
+ * @param right_proportion How far the point is proportionally from the left to the right. Range: [0..1]
+ * @param bottom_proportion How far the point is proportionally from the top to the bottom. Range: [0..1]
+ * 
+ * @return The value produced by bilinear interpolation
+*/
 template<typename T>
 inline T bilinearInterpolation(T top_left, T top_right, T bottom_left, T bottom_right,
                                float right_proportion, float bottom_proportion) {

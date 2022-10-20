@@ -60,12 +60,10 @@ Image<T> scaleXbr(const Image<T>& src) {
             T zero, one, two, three;
             zero = one = two = three = src.safeAccess(x, y);
 
-            // TODO: The whole colour rule section is a MAJOR source of error
             if (edr_bot_right) {
                 T new_color = (dist(E, F) <= dist(E, H)) ? F : H;
                 if (F == G && H == C) {
-                    // TODO: Actually figure out what the fuck this is supposed to be
-                    three   = glm::mix(three, new_color, 0.75f); // Mix the mix?
+                    three   = glm::mix(three, new_color, 0.75f);
                     two     = glm::mix(two, new_color, 0.25f);
                     one     = glm::mix(one, new_color, 0.25f);
                 } else if (F == G) {

@@ -48,8 +48,3 @@ set_target_properties(
  
 # Preprocessor definitions for path.
 target_compile_definitions(${MAIN_EXE_NAME} PRIVATE "-DDATA_DIR=\"${CMAKE_CURRENT_LIST_DIR}/data/\"" "-DOUTPUT_DIR=\"${CMAKE_CURRENT_LIST_DIR}/outputs\"")
-
-if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/grading_tests/")
-	#add_subdirectory("grading_tests")
-endif()	
-

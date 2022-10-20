@@ -66,6 +66,15 @@ void setAllRowsToValue(Eigen::Matrix<T, 4, 1>& col_vec, T value) {
     for (uint8_t i = 0; i < 4; i++) { col_vec[i] = value; }
 }
 
+/**
+ * Compute the condition (as defined by the Adaptive NEDI paper) of the R matrices (as defined by the NEDI paper)
+ * 
+ * @param window_size Size of the local window used for covariance sampling
+ * @param diagonal_neighbours Matrix containing the diagonal neighbours of the pixels in the sampling window
+ * @param axial_neighbours Matrix containing the axial neighbours of the pixels in the sampling window
+ * 
+ * @return True if the conditions of both matrices are below CONDITION_THRESHOLD and are not NaNs, false otherwise
+*/
 template<typename T>
 bool conditionBelowThreshold(uint32_t window_size, const Eigen::Matrix<T, Eigen::Dynamic, 4>& diagonal_neighbours,
                              const Eigen::Matrix<T, Eigen::Dynamic, 4>& axial_neighbours) {
@@ -133,8 +142,6 @@ Image<T> scaleNedi(const Image<T>& src) {
                     }
                 }
             } while (!conditionBelowThreshold(window_pxl_length, diagonal_neighbours, axial_neighbours) && window_pxl_length < WINDOW_SIZE_MAX);
-            
-            
 
             // Compute diagonal and axial interpolation weights left sub-term
             auto diagonal_neighbours_transpose  = diagonal_neighbours.transpose();
