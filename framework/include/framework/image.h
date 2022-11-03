@@ -43,6 +43,8 @@ template <>
 float stbToType<float>(const stbi_uc* src);
 template <>
 glm::vec3 stbToType<glm::vec3>(const stbi_uc* src);
+template <>
+glm::uvec3 stbToType<glm::uvec3>(const stbi_uc* src);
 
 template<typename T>
 inline T stbfToType(const float* src) { throw std::runtime_error("Not implemented."); };
@@ -50,6 +52,8 @@ template <>
 float stbfToType<float>(const float* src);
 template <>
 glm::vec3 stbfToType<glm::vec3>(const float* src);
+template <>
+glm::uvec3 stbfToType<glm::uvec3>(const float* src);
 
 template <typename T>
 inline void typeToRgbUint8(stbi_uc* dst, const T& value) { throw std::runtime_error("Not implemented."); };
@@ -57,6 +61,8 @@ template <>
 void typeToRgbUint8(stbi_uc* dst, const float& value);
 template <>
 void typeToRgbUint8(stbi_uc* dst, const glm::vec3& value);
+template <>
+void typeToRgbUint8(stbi_uc* dst, const glm::uvec3& value);
 
 template <typename T>
 inline T sampleNoise(std::function<float(void)>& pdf) { throw std::runtime_error("Not implemented."); };
