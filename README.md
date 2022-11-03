@@ -4,6 +4,7 @@ This repository contains a portion of the implementation for a submission for th
 ## Requirements
 - CMake 3.11 or higher
 - C++20 compliant compiler
+- OpenMP 2.0 or higher
 
 ## Group Member(s)
 - William Narchi (5046122)

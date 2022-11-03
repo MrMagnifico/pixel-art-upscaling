@@ -23,10 +23,6 @@ target_link_libraries(${MAIN_EXE_NAME} PRIVATE CGFramework)
 enable_sanitizers(${MAIN_EXE_NAME})
 set_project_warnings(${MAIN_EXE_NAME})
 
-# Register Catch2 tests
-add_executable(compile_test "tests/compile_test.cpp")
-target_link_libraries(compile_test PRIVATE Catch2::Catch2WithMain)
-
 # OpenMP support.
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND) 
