@@ -19,6 +19,8 @@ DISABLE_WARNINGS_POP()
 #include "nedi.hpp"
 #include "xbr.hpp"
 
+static constexpr uint32_t MAX_UPSCALE_FACTOR = 2U; // Must be a power of two >=2
+
 static const std::filesystem::path data_dir_path { DATA_DIR };
 static const std::filesystem::path out_dir_path { OUTPUT_DIR };
 
@@ -27,6 +29,10 @@ static const std::filesystem::path out_dir_path { OUTPUT_DIR };
 static const std::vector<std::string> TEST_FILES = {
     "SonictheHedgehog_SonicSprite",
     "Z-Saber_Zero_MX3",
+    "Zero_x1_sprite",
+    "X1-3_X_Idle",
+    "X1Sigma_Battle_Animation",
+    "X3Sigma_Battle_Animation",
     "gaxe_skeleton_input",
     "sbm1_02_input",
     "sma_chest_input",
@@ -55,7 +61,7 @@ int main(int argc, char** argv) {
         Image<glm::uvec3> scale_xbr         = input;
         Image<glm::vec3> scale_nedi         = input_flt;
 
-        for (uint32_t scale_factor = 2U; scale_factor <= 16U; scale_factor *= 2) {
+        for (uint32_t scale_factor = 2U; scale_factor <= MAX_UPSCALE_FACTOR; scale_factor *= 2) {
             std::cout << "Scaling "<< filename << " by " << scale_factor << "x..." << std::endl;
 
             scale_epx       = scaleEpx(scale_epx);

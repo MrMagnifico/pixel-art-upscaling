@@ -30,7 +30,7 @@ public:
 
     void writeToFile(const std::filesystem::path& filePath);
     size_t getImageOffset(int x, int y) const;
-    T safeAccess(int x, int y, OutOfBoundsStrategy out_of_bounds_strategy = ZERO) const;
+    T safeAccess(int x, int y, OutOfBoundsStrategy out_of_bounds_strategy = NEAREST) const;
 
 public:
     int width, height;
