@@ -1,7 +1,5 @@
-# Directories
+# Blobs
 /build
-/data
 /outputs
-
-# IDE files
-/.vscode
+/venv
+/src/__pycache__

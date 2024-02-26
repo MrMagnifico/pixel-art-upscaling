@@ -56,16 +56,16 @@ bool threeOrMoreIdentical(T a, T b, T c, T d) {
 template<typename T>
 inline T bilinearInterpolation(T top_left, T top_right, T bottom_left, T bottom_right,
                                float right_proportion, float bottom_proportion) {
-    T top_interp = glm::mix(top_left, top_right, right_proportion);
+    T top_interp    = glm::mix(top_left, top_right, right_proportion);
     T bottom_interp = glm::mix(bottom_left, bottom_right, right_proportion);
     return glm::mix(top_interp, bottom_interp, bottom_proportion);
 }
 
 static inline glm::uvec3 rgbToYuv(glm::uvec3 val) {
     return {
-        (0.299f * val.r) + (0.587f * val.g) + (0.114f * val.b),
-        ((-0.169f * val.r) + (-0.331 * val.g) + (0.5f * val.b)) + 128,
-        ((0.5f * val.r) + (-0.419f * val.g) + (-0.081f * val.b)) + 128};
+        (0.299f * val.r)    + (0.587f * val.g)  + (0.114f * val.b),
+        ((-0.169f * val.r)  + (-0.331 * val.g)  + (0.5f * val.b))       + 128,
+        ((0.5f * val.r)     + (-0.419f * val.g) + (-0.081f * val.b))    + 128};
 }
 
 static inline uint32_t rgbToYuv(uint32_t val) {

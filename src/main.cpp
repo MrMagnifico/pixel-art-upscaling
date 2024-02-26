@@ -11,6 +11,10 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 #include <framework/image.h>
 
+#ifdef NDEBUG
+#include <omp.h>
+#endif
+
 #include "common.hpp"
 #include "2xsai.hpp"
 #include "eagle.hpp"
@@ -19,7 +23,7 @@ DISABLE_WARNINGS_POP()
 #include "nedi.hpp"
 #include "xbr.hpp"
 
-static constexpr uint32_t MAX_UPSCALE_FACTOR = 2U; // Must be a power of two >=2
+static constexpr uint32_t MAX_UPSCALE_FACTOR = 16U; // Must be a power of two >=2
 
 static const std::filesystem::path data_dir_path { DATA_DIR };
 static const std::filesystem::path out_dir_path { OUTPUT_DIR };
@@ -28,6 +32,7 @@ static const std::filesystem::path out_dir_path { OUTPUT_DIR };
 // Do I have the time? Questionable.
 static const std::vector<std::string> TEST_FILES = {
     "SonictheHedgehog_SonicSprite",
+    "Sonic_screech",
     "Z-Saber_Zero_MX3",
     "Zero_x1_sprite",
     "X1-3_X_Idle",
@@ -47,8 +52,11 @@ static const std::vector<std::string> TEST_FILES = {
     "smw_mushroom_input"};
 
 int main(int argc, char** argv) {
-    #pragma omp parallel for
-    for (const std::string& filename : TEST_FILES) {
+    #ifdef NDEBUG
+    #pragma omp parallel for schedule(guided)
+    #endif
+    for (int32_t testFileIdx = 0; testFileIdx < TEST_FILES.size(); testFileIdx++) { // No for-each loops because MSVC's OpenMP support is asinine
+        const std::string& filename = TEST_FILES[testFileIdx];
         Image<glm::uvec3> input     = Image<glm::uvec3>(data_dir_path / (filename + ".png"));
         Image<glm::vec3> input_flt  = Image<glm::vec3>(data_dir_path / (filename + ".png"));
         input.writeToFile(out_dir_path / (filename + "-initial_image.png"));

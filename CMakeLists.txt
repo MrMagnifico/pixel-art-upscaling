@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
-project(cs4365 CXX)
+project(cs4365 C CXX)
 
 set(MAIN_EXE_NAME "fin-proj")
 
 # Binaries directly to the binary dir without subfolders.
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/framework")
 	# Create framework library and include CMake scripts (compiler warnings, sanitizers and static analyzers).
@@ -35,12 +34,6 @@ endif()
 set_target_properties(
     ${MAIN_EXE_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-
-# # Copy all files in the resources folder to the build directory after every successful build.
-# add_custom_command(TARGET ${MAIN_EXE_NAME} POST_BUILD
-# 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-# 	"${CMAKE_CURRENT_LIST_DIR}/data" $<TARGET_FILE_DIR:${MAIN_EXE_NAME}>/data)
-
  
 # Preprocessor definitions for path.
 target_compile_definitions(${MAIN_EXE_NAME} PRIVATE "-DDATA_DIR=\"${CMAKE_CURRENT_LIST_DIR}/data/\"" "-DOUTPUT_DIR=\"${CMAKE_CURRENT_LIST_DIR}/outputs\"")
